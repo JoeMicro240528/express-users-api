@@ -1,13 +1,14 @@
-require('dotenv').config();
-const express = require('express');
-const helmet = require('helmet');
-const cors = require('cors');
-const rateLimit = require('express-rate-limit');
+import 'dotenv/config';
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import { fileURLToPath } from 'url';
 
-const connectDB = require('./config/database');
-const usersRoutes = require('./routes/users.routes');
-const errorHandler = require('./middlewares/errorHandler');
-const AppError = require('./utils/AppError');
+import connectDB from './config/database.js';
+import usersRoutes from './routes/users.routes.js';
+import errorHandler from './middlewares/errorHandler.js';
+import AppError from './utils/AppError.js';
 
 // الاتصال بقاعدة البيانات MongoDB
 connectDB();
@@ -39,7 +40,7 @@ app.use(express.json({ limit: '10kb' }));
 
 // مسار اختباري للصفحة الرئيسية
 app.get('/', (req, res) => {
-  res.send('Server is running. Navigate to /users to test user routes.');
+  res.send('Server is running with ES Modules. Navigate to /users to test user routes.');
 });
 
 // ربط الـ Router على المسار الأساسي /users
@@ -53,11 +54,13 @@ app.use((req, res, next) => {
 // وسيط معالجة الأخطاء المركزي (يجب أن يكون دائماً في نهاية الـ Middlewares)
 app.use(errorHandler);
 
-// بدء تشغيل الخادم
-if (require.main === module) {
+// بدء تشغيل الخادم إذا تم تشغيل الملف مباشرة
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+if (isMain) {
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
   });
 }
 
-module.exports = app;
+export { app };
+export default app;

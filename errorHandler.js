@@ -1,1 +1,1 @@
-module.exports = require('./middlewares/errorHandler');
+export { default, errorHandler } from './middlewares/errorHandler.js';

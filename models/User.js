@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 /**
  * مخطط المستخدم (User Schema)
@@ -44,4 +44,5 @@ const userSchema = new mongoose.Schema(
 // إنشاء النموذج وتصديره
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+export { User };
+export default User;

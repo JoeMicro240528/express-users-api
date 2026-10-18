@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-const User = require('../models/User');
-const AppError = require('../utils/AppError');
+import mongoose from 'mongoose';
+import User from '../models/User.js';
+import AppError from '../utils/AppError.js';
 
 /**
  * جلب المستخدمين مباشرة من قاعدة بيانات MongoDB مع دعم:
@@ -112,7 +112,14 @@ const deleteUser = async (id) => {
   return user;
 };
 
-module.exports = {
+export {
+  getAllUsers,
+  findUserById,
+  createUser,
+  deleteUser
+};
+
+export default {
   getAllUsers,
   findUserById,
   createUser,

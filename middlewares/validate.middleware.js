@@ -1,4 +1,4 @@
-const { ZodError } = require('zod');
+import { ZodError } from 'zod';
 
 /**
  * وسيط (Middleware) عام للتحقق من صحة البيانات باستخدام Zod
@@ -49,4 +49,5 @@ const validate = (schemas) => {
   };
 };
 
-module.exports = { validate };
+export { validate };
+export default validate;

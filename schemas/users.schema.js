@@ -1,4 +1,4 @@
-const { z } = require('zod');
+import { z } from 'zod';
 
 // مخطط التحقق من معلمات الاستعلام (Query Parameters) للـ Search و Filtering و Pagination
 const getUsersQuerySchema = z.object({
@@ -45,7 +45,7 @@ const userIdParamSchema = z.object({
     .regex(/^[0-9a-fA-F]{24}$/, 'معرف المستخدم غير صالح (يجب أن يكون 24 خانة بنظام ObjectId)')
 });
 
-module.exports = {
+export {
   getUsersQuerySchema,
   createUserSchema,
   userIdParamSchema

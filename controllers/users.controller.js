@@ -1,4 +1,4 @@
-const usersService = require('../services/users.service');
+import usersService from '../services/users.service.js';
 
 // GET / -> جلب المستخدمين من قاعدة البيانات مع البحث والتصفية والترقيم
 const getAllUsers = async (req, res, next) => {
@@ -54,7 +54,14 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-module.exports = {
+export {
+  getAllUsers,
+  getUserById,
+  createUser,
+  deleteUser
+};
+
+export default {
   getAllUsers,
   getUserById,
   createUser,
