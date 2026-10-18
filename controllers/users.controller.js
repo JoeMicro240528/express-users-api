@@ -1,0 +1,62 @@
+const usersService = require('../services/users.service');
+
+// GET / -> جلب المستخدمين من قاعدة البيانات مع البحث والتصفية والترقيم
+const getAllUsers = async (req, res, next) => {
+  try {
+    const result = await usersService.getAllUsers(req.query);
+    res.status(200).json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /:id -> جلب مستخدم حسب المعرف من قاعدة البيانات
+const getUserById = async (req, res, next) => {
+  try {
+    const user = await usersService.findUserById(req.params.id);
+    res.status(200).json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST / -> إضافة مستخدم جديد في قاعدة البيانات
+const createUser = async (req, res, next) => {
+  try {
+    const newUser = await usersService.createUser(req.body);
+    res.status(201).json({
+      success: true,
+      message: 'تم إضافة المستخدم بنجاح في قاعدة البيانات',
+      data: newUser
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// DELETE /:id -> حذف مستخدم حسب المعرف من قاعدة البيانات
+const deleteUser = async (req, res, next) => {
+  try {
+    const deletedUser = await usersService.deleteUser(req.params.id);
+    res.status(200).json({
+      success: true,
+      message: `تم حذف المستخدم بالمعرف ${req.params.id} بنجاح من قاعدة البيانات`,
+      data: deletedUser
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  getAllUsers,
+  getUserById,
+  createUser,
+  deleteUser
+};
