@@ -34,8 +34,12 @@ const createUserSchema = z.object({
   email: z
     .string({ required_error: 'البريد الإلكتروني مطلوب' })
     .email('صيغة البريد الإلكتروني غير صحيحة'),
+  password: z
+    .string({ required_error: 'كلمة المرور مطلوبة' })
+    .min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
   role: z.enum(['admin', 'user']).default('user'),
-  isActive: z.boolean().default(true)
+  isActive: z.boolean().default(true),
+  age: z.number().min(0).optional()
 });
 
 // مخطط التحقق لتحديث بيانات المستخدم (Request Body) - لا يسمح بتعديل الدور role

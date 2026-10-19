@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
 
 import connectDB from './config/database.js';
+import authRoutes from './routes/auth.routes.js';
 import usersRoutes from './routes/users.routes.js';
 import errorHandler from './middlewares/errorHandler.js';
 import AppError from './utils/AppError.js';
@@ -43,7 +44,8 @@ app.get('/', (req, res) => {
   res.send('Server is running with ES Modules. Navigate to /users to test user routes.');
 });
 
-// ربط الـ Router على المسار الأساسي /users
+// ربط مسارات المصادقة والمستخدمين
+app.use('/auth', authRoutes);
 app.use('/users', usersRoutes);
 
 // معالجة أي مسار غير موجود (404 Not Found)

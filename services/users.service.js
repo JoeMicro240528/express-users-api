@@ -79,7 +79,7 @@ const findUserById = async (id) => {
 /**
  * إضافة مستخدم جديد في قاعدة بيانات MongoDB
  */
-const createUser = async ({ name, email, role = 'user', isActive = true }) => {
+const createUser = async ({ name, email, password, role = 'user', isActive = true, age }) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new AppError('البريد الإلكتروني مسجل بالفعل لمستخدم آخر', 400);
@@ -88,11 +88,16 @@ const createUser = async ({ name, email, role = 'user', isActive = true }) => {
   const newUser = await User.create({
     name,
     email,
+    password,
     role,
-    isActive
+    isActive,
+    age
   });
 
-  return newUser;
+  const userObj = newUser.toObject();
+  delete userObj.password;
+
+  return userObj;
 };
 
 /**
