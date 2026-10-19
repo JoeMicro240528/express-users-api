@@ -96,6 +96,52 @@ const createUser = async ({ name, email, role = 'user', isActive = true }) => {
 };
 
 /**
+ * تحديث بيانات مستخدم بواسطة المعرف ID في قاعدة البيانات
+ */
+const updateUser = async (id, updateData) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError(`معرف المستخدم ${id} غير صالح (Invalid ObjectId)`, 400);
+  }
+
+  // الحقول المسموح بتعديلها فقط (منع تعديل role منعاً باتاً)
+  const allowedFields = ["name", "email", "age", "isActive"];
+  const safeUpdateData = {};
+
+  for (const field of allowedFields) {
+    if (updateData[field] !== undefined) {
+      safeUpdateData[field] = updateData[field];
+    }
+  }
+
+  if (Object.keys(safeUpdateData).length === 0) {
+    throw new AppError('لا توجد حقول مسموح بتعديلها في هذا الطلب (لا يمكن تعديل الدور role)', 400);
+  }
+
+  // إذا تم إرسال بريد جديد، نتأكد أنه غير مسجل لمستخدم آخر
+  if (safeUpdateData.email) {
+    const emailExists = await User.findOne({
+      email: safeUpdateData.email,
+      _id: { $ne: id }
+    });
+    if (emailExists) {
+      throw new AppError('البريد الإلكتروني مسجل بالفعل لمستخدم آخر', 400);
+    }
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    id,
+    safeUpdateData,
+    { returnDocument: 'after', runValidators: true }
+  ).lean();
+
+  if (!updatedUser) {
+    throw new AppError(`المستخدم بالمعرف ${id} غير موجود في قاعدة البيانات`, 404);
+  }
+
+  return updatedUser;
+};
+
+/**
  * حذف مستخدم بواسطة المعرف ID من قاعدة البيانات
  */
 const deleteUser = async (id) => {
@@ -116,6 +162,7 @@ export {
   getAllUsers,
   findUserById,
   createUser,
+  updateUser,
   deleteUser
 };
 
@@ -123,5 +170,6 @@ export default {
   getAllUsers,
   findUserById,
   createUser,
+  updateUser,
   deleteUser
 };

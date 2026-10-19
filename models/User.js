@@ -34,6 +34,10 @@ const userSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true
+    },
+    age: {
+      type: Number,
+      min: [0, 'العمر يجب أن يكون رقماً موجباً']
     }
   },
   {

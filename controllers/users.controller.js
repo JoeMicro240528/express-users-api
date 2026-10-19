@@ -40,6 +40,20 @@ const createUser = async (req, res, next) => {
   }
 };
 
+// PATCH /:id -> تحديث بيانات مستخدم في قاعدة البيانات
+const updateUser = async (req, res, next) => {
+  try {
+    const updatedUser = await usersService.updateUser(req.params.id, req.body);
+    res.status(200).json({
+      success: true,
+      message: 'تم تحديث بيانات المستخدم بنجاح',
+      data: updatedUser
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // DELETE /:id -> حذف مستخدم حسب المعرف من قاعدة البيانات
 const deleteUser = async (req, res, next) => {
   try {
@@ -58,6 +72,7 @@ export {
   getAllUsers,
   getUserById,
   createUser,
+  updateUser,
   deleteUser
 };
 
@@ -65,5 +80,6 @@ export default {
   getAllUsers,
   getUserById,
   createUser,
+  updateUser,
   deleteUser
 };
