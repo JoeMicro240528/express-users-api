@@ -68,7 +68,16 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+// GET /me -> جلب بيانات الحساب الحالي للمستخدم المصادق عليه
+const getMe = (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: req.user
+  });
+};
+
 export {
+  getMe,
   getAllUsers,
   getUserById,
   createUser,
@@ -77,6 +86,7 @@ export {
 };
 
 export default {
+  getMe,
   getAllUsers,
   getUserById,
   createUser,

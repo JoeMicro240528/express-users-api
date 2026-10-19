@@ -1,5 +1,6 @@
 import express from 'express';
 import usersController from '../controllers/users.controller.js';
+import { protect, restrictTo } from '../middlewares/auth.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
 import {
   getUsersQuerySchema,
@@ -10,31 +11,48 @@ import {
 
 const router = express.Router();
 
-// GET / -> جلب المستخدمين مع التحقق من معلمات البحث والتصفية والترقيم (Query Params)
+// 🔒 تفعيل وسيط الحماية على جميع مسارات المستخدمين
+// كل مسار بعد هذا السطر يتطلب وجود Token صالح في ترويسة Authorization
+router.use(protect);
+
+// GET /users/me -> جلب الملف الشخصي للمستخدم المسجل دخوله حالياً
+router.get('/me', usersController.getMe);
+
+// GET /users -> جلب المستخدمين (للمستخدمين المسجلين فقط مع دعم Search و Filter و Pagination)
 router.get('/', validate({ query: getUsersQuerySchema }), usersController.getAllUsers);
 
-// GET /:id -> جلب مستخدم محدد مع التحقق من المعرف
+// GET /users/:id -> جلب مستخدم محدد بواسطة الـ ID
 router.get('/:id', validate({ params: userIdParamSchema }), usersController.getUserById);
 
-// POST / -> إضافة مستخدم جديد مع التحقق من البيانات المدخلة
-router.post('/', validate({ body: createUserSchema }), usersController.createUser);
+// POST /users -> إضافة مستخدم جديد (متاح فقط للمشرف admin)
+router.post(
+  '/',
+  restrictTo('admin'),
+  validate({ body: createUserSchema }),
+  usersController.createUser
+);
 
-// PATCH /:id -> تعديل بيانات مستخدم (Partial Update)
+// PATCH /users/:id -> تعديل بيانات مستخدم (Partial Update)
 router.patch(
   '/:id',
   validate({ params: userIdParamSchema, body: updateUserSchema }),
   usersController.updateUser
 );
 
-// PUT /:id -> تعديل بيانات مستخدم
+// PUT /users/:id -> تعديل بيانات مستخدم
 router.put(
   '/:id',
   validate({ params: userIdParamSchema, body: updateUserSchema }),
   usersController.updateUser
 );
 
-// DELETE /:id -> حذف مستخدم مع التحقق من المعرف
-router.delete('/:id', validate({ params: userIdParamSchema }), usersController.deleteUser);
+// DELETE /users/:id -> حذف مستخدم (متاح فقط للمشرف admin)
+router.delete(
+  '/:id',
+  restrictTo('admin'),
+  validate({ params: userIdParamSchema }),
+  usersController.deleteUser
+);
 
 export { router };
 export default router;
