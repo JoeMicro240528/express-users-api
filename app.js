@@ -30,10 +30,20 @@ app.use(
 app.use(cors());
 
 // 3. توثيق Swagger UI و OpenAPI JSON (متاح دون Rate Limit)
+// استخدام روابط CDN لملفات Swagger UI لضمان عملها بشكل مثالي على Vercel و Serverless
+const SWAGGER_CSS_URL =
+  'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui.min.css';
+const SWAGGER_JS_URLS = [
+  'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui-bundle.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui-standalone-preset.min.js'
+];
+
 app.use(
   '/api-docs',
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, {
+    customCssUrl: SWAGGER_CSS_URL,
+    customJs: SWAGGER_JS_URLS,
     customSiteTitle: 'Express Users API Docs'
   })
 );

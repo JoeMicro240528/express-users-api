@@ -17,12 +17,16 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'خادم التطوير المحلي (Local Server)'
+        url: '/',
+        description: 'الخادم الحالي (Current Server)'
       },
       {
-        url: `https://express-users-api-phi.vercel.app`,
-        description: 'الخادم الإنتاجي (Production Server)'
+        url: 'https://express-users-api-phi.vercel.app',
+        description: 'خادم Vercel الإنتاجي'
+      },
+      {
+        url: 'http://localhost:3000',
+        description: 'خادم التطوير المحلي'
       }
     ],
     components: {
