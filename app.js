@@ -4,7 +4,9 @@ import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
+import swaggerUi from 'swagger-ui-express';
 
+import swaggerSpec from './config/swagger.js';
 import connectDB from './config/database.js';
 import authRoutes from './routes/auth.routes.js';
 import usersRoutes from './routes/users.routes.js';
@@ -17,13 +19,30 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 1. تعيين ترويسات الأمان HTTP عبر Helmet
-app.use(helmet());
+// 1. تعيين ترويسات الأمان HTTP عبر Helmet (مع السماح لـ Swagger UI بالعمل)
+app.use(
+  helmet({
+    contentSecurityPolicy: false
+  })
+);
 
 // 2. تفعيل مشاركة الموارد عبر الأصول المختلفة (CORS)
 app.use(cors());
 
-// 3. تحديد معدل الطلبات للحد من الطلبات الزائدة (Rate Limiting)
+// 3. توثيق Swagger UI و OpenAPI JSON (متاح دون Rate Limit)
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: 'Express Users API Docs'
+  })
+);
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
+// 4. تحديد معدل الطلبات للحد من الطلبات الزائدة (Rate Limiting)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // نافذة زمنية: 15 دقيقة
   max: 100, // الحد الأقصى: 100 طلب لكل IP خلال النافذة الزمنية
@@ -36,12 +55,12 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// 4. معالجة بيانات الـ JSON القادمة في جسم الطلب (Request Body)
+// 5. معالجة بيانات الـ JSON القادمة في جسم الطلب (Request Body)
 app.use(express.json({ limit: '10kb' }));
 
 // مسار اختباري للصفحة الرئيسية
 app.get('/', (req, res) => {
-  res.send('Server is running with ES Modules. Navigate to /users to test user routes.');
+  res.send('Server is running. Navigate to /api-docs for API Documentation.');
 });
 
 // ربط مسارات المصادقة والمستخدمين

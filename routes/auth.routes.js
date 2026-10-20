@@ -6,6 +6,13 @@ import { registerSchema, loginSchema } from '../schemas/auth.schema.js';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: مسارات المصادقة وتسجيل الحسابات
+ */
+
 // محدد معدل الطلبات لتسجيل الدخول (حماية من هجمات القوة الغاشمة Brute Force)
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // نافذة زمنية: 15 دقيقة
@@ -31,7 +38,51 @@ const registerLimiter = rateLimit({
   }
 });
 
-// POST /auth/register -> تسجيل حساب جديد (مع حماية Rate Limit بـ 10 طلبات)
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: تسجيل حساب مستخدم جديد
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Ahmed Ali
+ *               email:
+ *                 type: string
+ *                 example: ahmed@example.com
+ *               password:
+ *                 type: string
+ *                 example: Password123
+ *               age:
+ *                 type: number
+ *                 example: 25
+ *     responses:
+ *       201:
+ *         description: تم تسجيل الحساب بنجاح وتوليد Token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       400:
+ *         description: خطأ في التحقق من البيانات أو البريد مسجل مسبقاً
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       429:
+ *         description: تم تجاوز الحد الأقصى لإنشاء الحسابات
+ */
 router.post(
   '/register',
   registerLimiter,
@@ -39,7 +90,44 @@ router.post(
   authController.register
 );
 
-// POST /auth/login -> تسجيل الدخول (مع حماية Rate Limit)
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: تسجيل الدخول والحصول على الـ Token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: ahmed@example.com
+ *               password:
+ *                 type: string
+ *                 example: Password123
+ *     responses:
+ *       200:
+ *         description: تم تسجيل الدخول بنجاح
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       401:
+ *         description: البريد الإلكتروني أو كلمة المرور غير صحيحة
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       429:
+ *         description: تم تجاوز الحد الأقصى لمحاولات تسجيل الدخول
+ */
 router.post(
   '/login',
   loginLimiter,
