@@ -19,6 +19,10 @@ const swaggerOptions = {
       {
         url: 'http://localhost:3000',
         description: 'خادم التطوير المحلي (Local Server)'
+      },
+      {
+        url: `https://express-users-api-phi.vercel.app`,
+        description: 'الخادم الإنتاجي (Production Server)'
       }
     ],
     components: {
