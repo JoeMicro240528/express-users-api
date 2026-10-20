@@ -112,6 +112,21 @@ userSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
+// ==========================================
+// فهارس تحسين الأداء (Performance Indexes)
+// ==========================================
+
+// 1. فهرس الترتيب الزمني الأحدث أولاً (Pagination & Sorting)
+userSchema.index({ createdAt: -1 });
+
+// 2. فهارس مركبة للتصفية مع الترتيب وفق قاعدة ESR (Equality, Sort, Range)
+userSchema.index({ role: 1, createdAt: -1 });
+userSchema.index({ isActive: 1, createdAt: -1 });
+userSchema.index({ role: 1, isActive: 1, createdAt: -1 });
+
+// 3. فهرس جزئي (Sparse Index) للبحث الفوري في رمز استعادة كلمة المرور دون حجز ذاكرة للقيم الفارغة
+userSchema.index({ passwordResetToken: 1 }, { sparse: true });
+
 // إنشاء النموذج وتصديره
 const User = mongoose.model('User', userSchema);
 
