@@ -28,7 +28,9 @@ const protect = async (req, res, next) => {
     try {
       decoded = jwt.verify(
         token,
-        process.env.JWT_SECRET || 'super_secret_jwt_key_123456789_change_in_production'
+        process.env.ACCESS_TOKEN_SECRET ||
+          process.env.JWT_SECRET ||
+          'super_secret_jwt_key_123456789_change_in_production'
       );
     } catch (err) {
       if (err.name === 'TokenExpiredError') {
@@ -56,7 +58,14 @@ const protect = async (req, res, next) => {
       );
     }
 
-    // 5. إرفاق بيانات المستخدم في كائن الطلب req.user لاستخدامه في المسارات اللاحقة
+    // 5. التحقق مما إذا تم تغيير كلمة المرور بعد تاريخ إصدار هذا الرمز (JWT)
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+      return next(
+        new AppError('تم تغيير كلمة المرور مؤخراً، يرجى تسجيل الدخول مجدداً باستخدام كلمة المرور الجديدة', 401)
+      );
+    }
+
+    // 6. إرفاق بيانات المستخدم في كائن الطلب req.user لاستخدامه في المسارات اللاحقة
     req.user = currentUser;
     next();
   } catch (error) {

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 /**
  * مخطط المستخدم (User Schema)
@@ -30,6 +31,17 @@ const userSchema = new mongoose.Schema(
       minlength: [6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'],
       select: false // إخفاء كلمة المرور تلقائياً من نتائج الاستعلامات
     },
+    passwordChangedAt: {
+      type: Date
+    },
+    passwordResetToken: {
+      type: String,
+      select: false // إخفاء رمز استعادة كلمة المرور المشفر
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false // إخفاء وقت انتهاء صلاحية الرمز
+    },
     role: {
       type: String,
       enum: {
@@ -45,6 +57,10 @@ const userSchema = new mongoose.Schema(
     age: {
       type: Number,
       min: [0, 'العمر يجب أن يكون رقماً موجباً']
+    },
+    refreshToken: {
+      type: String,
+      select: false // إخفاء الـ refresh token تلقائياً من الاستعلامات
     }
   },
   {
@@ -52,16 +68,48 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// تشفير كلمة المرور تلقائياً قبل حفظ المستخدم إذا تم تعديلها أو إنشاؤها
+// تشفير كلمة المرور تلقائياً وتحديث passwordChangedAt قبل الحفظ
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+
+  // تحديث وقت تغيير كلمة المرور للمستخدمين القدامى فقط (وليس عند التسجيل لأول مرة)
+  if (!this.isNew) {
+    this.passwordChangedAt = Date.now() - 1000;
+  }
 });
 
 // دالة لمقارنة كلمة المرور المدخلة مع كلمة المرور المشفرة
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// دالة للتحقق مما إذا تم تغيير كلمة المرور بعد تاريخ إصدار الـ JWT Token
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+    return JWTTimestamp < changedTimestamp;
+  }
+  return false;
+};
+
+// دالة لتوليد رمز استعادة كلمة المرور المشفر مع تعيين مدة صلاحيته (10 دقائق)
+userSchema.methods.createPasswordResetToken = function () {
+  // توليد رمز عشوائي غير مشفر لإرساله للمستخدم عبر البريد
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  // تشفير الرمز باستخدام SHA-256 لحفظه بأمان في قاعدة البيانات
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // تعيين مدة الصلاحية: 10 دقائق من اللحظة الحالية
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
 };
 
 // إنشاء النموذج وتصديره

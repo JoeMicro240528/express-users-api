@@ -67,9 +67,11 @@ const swaggerOptions = {
           type: 'object',
           properties: {
             success: { type: 'boolean', example: true },
-            message: { type: 'string', example: 'تم تسجيل الدخول بنجاح' },
+            message: { type: 'string', example: 'تمت العملية بنجاح' },
             user: { $ref: '#/components/schemas/User' },
-            token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI...' }
+            accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+            refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+            token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' }
           }
         },
         ErrorResponse: {
