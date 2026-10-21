@@ -5,7 +5,9 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
 import swaggerUi from 'swagger-ui-express';
+import pinoHttp from 'pino-http';
 
+import logger from './utils/logger.js';
 import swaggerSpec from './config/swagger.js';
 import connectDB from './config/database.js';
 import authRoutes from './routes/auth.routes.js';
@@ -29,7 +31,23 @@ app.use(
 // 2. تفعيل مشاركة الموارد عبر الأصول المختلفة (CORS)
 app.use(cors());
 
-// 3. توثيق Swagger UI و OpenAPI JSON (متاح دون Rate Limit)
+// 3. تسجيل بيانات الطلبات HTTP تلقائياً عبر Pino-HTTP
+app.use(
+  pinoHttp({
+    logger,
+    autoLogging: {
+      ignore: (req) =>
+        process.env.NODE_ENV === 'test' || req.url.startsWith('/api-docs')
+    },
+    customLogLevel: (req, res, err) => {
+      if (res.statusCode >= 500 || err) return 'error';
+      if (res.statusCode >= 400) return 'warn';
+      return 'info';
+    }
+  })
+);
+
+// 4. توثيق Swagger UI و OpenAPI JSON (متاح دون Rate Limit)
 // استخدام روابط CDN لملفات Swagger UI لضمان عملها بشكل مثالي على Vercel و Serverless
 const SWAGGER_CSS_URL =
   'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui.min.css';
@@ -89,7 +107,8 @@ app.use(errorHandler);
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (isMain) {
   app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    logger.info(`Server is running on http://localhost:${PORT}`);
+    logger.info(`Swagger docs available at http://localhost:${PORT}/api-docs`);
   });
 }
 

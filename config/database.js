@@ -1,5 +1,6 @@
 
 import mongoose from "mongoose";
+import logger from "../utils/logger.js";
 
 let connectionPromise;
 
@@ -18,7 +19,7 @@ const connectDB = async () => {
         serverSelectionTimeoutMS: 10000,
       })
       .then((conn) => {
-        console.log(
+        logger.info(
           `MongoDB connected successfully: ${conn.connection.host}`
         );
 
