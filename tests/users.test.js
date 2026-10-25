@@ -103,7 +103,7 @@ describe('Users Endpoints Integration Tests', () => {
         .attach('avatar', Buffer.from('fake text content'), 'document.txt');
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toContain('نوع الملف غير مدعوم');
+      expect(res.body.message).toMatch(/Only JPEG, PNG, and WebP/i);
     });
 
     it('يجب أن يرفع الصورة بنجاح ويحدث مسار avatar للمستخدم (200 OK)', async () => {

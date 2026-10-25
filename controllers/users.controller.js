@@ -84,7 +84,7 @@ const uploadAvatar = async (req, res, next) => {
       throw new AppError('يرجى اختيار صورة للرفع في حقل avatar', 400);
     }
 
-    const updatedUser = await usersService.updateUserAvatar(req.user._id, req.file.filename);
+    const updatedUser = await usersService.updateUserAvatar(req.user._id, req.file);
 
     res.status(200).json({
       success: true,

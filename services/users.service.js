@@ -181,8 +181,9 @@ const removeAvatarFile = async (avatarPath) => {
 
 /**
  * تحديث الصورة الرمزية للمستخدم (Avatar)
+ * يدعم Memory Storage وكتابة الملف على القرص أو الحفظ كـ Data URI في بيئات Serverless
  */
-const updateUserAvatar = async (userId, filename) => {
+const updateUserAvatar = async (userId, file) => {
   const user = await User.findById(userId);
   if (!user) {
     throw new AppError('المستخدم غير موجود', 404);
@@ -193,7 +194,22 @@ const updateUserAvatar = async (userId, filename) => {
     await removeAvatarFile(user.avatar);
   }
 
-  user.avatar = `/uploads/avatars/${filename}`;
+  const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+  const filename = `avatar-${userId}-${Date.now()}${ext}`;
+  const uploadDir = path.join(process.cwd(), 'uploads', 'avatars');
+
+  try {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    // كتابة الملف من الذاكرة (Memory Buffer) إلى القرص
+    await fs.promises.writeFile(path.join(uploadDir, filename), file.buffer);
+    user.avatar = `/uploads/avatars/${filename}`;
+  } catch (writeErr) {
+    // في بيئات Serverless مثل Vercel التي لا تسمح بالكتابة على القرص، يتم حفظ الصورة كـ Data URI
+    user.avatar = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+  }
+
   await user.save({ validateBeforeSave: false });
 
   const userObj = user.toObject();

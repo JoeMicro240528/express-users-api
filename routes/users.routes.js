@@ -2,7 +2,7 @@ import express from 'express';
 import usersController from '../controllers/users.controller.js';
 import { protect, restrictTo } from '../middlewares/auth.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
-import { uploadAvatar } from '../middlewares/upload.middleware.js';
+import upload from '../middlewares/upload.middleware.js';
 import {
   getUsersQuerySchema,
   createUserSchema,
@@ -92,7 +92,7 @@ router.get('/me', usersController.getMe);
  *       401:
  *         description: غير مصرح
  */
-router.patch('/me/avatar', uploadAvatar('avatar'), usersController.uploadAvatar);
+router.patch('/me/avatar', upload.single('avatar'), usersController.uploadAvatar);
 router.delete('/me/avatar', usersController.deleteAvatar);
 
 /**
