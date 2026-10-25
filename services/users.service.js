@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import AppError from '../utils/AppError.js';
@@ -163,12 +165,74 @@ const deleteUser = async (id) => {
   return user;
 };
 
+// دالة مساعدة لحذف ملف الصورة القديم من القرص لتجنب تراكم الملفات غير المستخدمة
+const removeAvatarFile = async (avatarPath) => {
+  if (!avatarPath || !avatarPath.startsWith('/uploads/avatars/')) return;
+  try {
+    const filename = path.basename(avatarPath);
+    const fullPath = path.join(process.cwd(), 'uploads', 'avatars', filename);
+    if (fs.existsSync(fullPath)) {
+      await fs.promises.unlink(fullPath);
+    }
+  } catch (error) {
+    // تجاهل الخطأ في حال تعذر مسح الملف القديم
+  }
+};
+
+/**
+ * تحديث الصورة الرمزية للمستخدم (Avatar)
+ */
+const updateUserAvatar = async (userId, filename) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError('المستخدم غير موجود', 404);
+  }
+
+  // حذف الصورة السابقة إن وجدت
+  if (user.avatar) {
+    await removeAvatarFile(user.avatar);
+  }
+
+  user.avatar = `/uploads/avatars/${filename}`;
+  await user.save({ validateBeforeSave: false });
+
+  const userObj = user.toObject();
+  delete userObj.password;
+  delete userObj.refreshToken;
+
+  return userObj;
+};
+
+/**
+ * حذف الصورة الرمزية للمستخدم وإعادتها للقيمة الافتراضية
+ */
+const deleteUserAvatar = async (userId) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError('المستخدم غير موجود', 404);
+  }
+
+  if (user.avatar) {
+    await removeAvatarFile(user.avatar);
+    user.avatar = null;
+    await user.save({ validateBeforeSave: false });
+  }
+
+  const userObj = user.toObject();
+  delete userObj.password;
+  delete userObj.refreshToken;
+
+  return userObj;
+};
+
 export {
   getAllUsers,
   findUserById,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  updateUserAvatar,
+  deleteUserAvatar
 };
 
 export default {
@@ -176,5 +240,7 @@ export default {
   findUserById,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  updateUserAvatar,
+  deleteUserAvatar
 };

@@ -3,6 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 import { fileURLToPath } from 'url';
 import swaggerUi from 'swagger-ui-express';
 import pinoHttp from 'pino-http';
@@ -85,6 +86,9 @@ app.use(limiter);
 
 // 5. معالجة بيانات الـ JSON القادمة في جسم الطلب (Request Body)
 app.use(express.json({ limit: '10kb' }));
+
+// 6. تقديم ملفات المرفوعات الثابتة كصور المستخدمين (Static Files)
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // مسار اختباري للصفحة الرئيسية
 app.get('/', (req, res) => {

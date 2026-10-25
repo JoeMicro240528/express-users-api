@@ -2,6 +2,7 @@ import express from 'express';
 import usersController from '../controllers/users.controller.js';
 import { protect, restrictTo } from '../middlewares/auth.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
+import { uploadAvatar } from '../middlewares/upload.middleware.js';
 import {
   getUsersQuerySchema,
   createUserSchema,
@@ -43,6 +44,56 @@ router.use(protect);
  *         description: غير مصرح (Token مفقود أو غير صالح)
  */
 router.get('/me', usersController.getMe);
+
+/**
+ * @swagger
+ * /users/me/avatar:
+ *   patch:
+ *     summary: رفع وتحديث الصورة الشخصية للمستخدم الحالي (Avatar)
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - avatar
+ *             properties:
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *                 description: ملف الصورة بصيغة JPG أو PNG أو WebP (بحد أقصى 3 ميجابايت)
+ *     responses:
+ *       200:
+ *         description: تم رفع وتحديث الصورة الشخصية بنجاح
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 message: { type: string, example: تم تحديث الصورة الشخصية بنجاح }
+ *                 data: { $ref: '#/components/schemas/User' }
+ *       400:
+ *         description: نوع الملف غير مدعوم أو تجاوز الحد الأقصى للحجم (3MB)
+ *       401:
+ *         description: غير مصرح
+ *   delete:
+ *     summary: حذف الصورة الشخصية الحالية للمستخدم
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: تم حذف الصورة الشخصية بنجاح
+ *       401:
+ *         description: غير مصرح
+ */
+router.patch('/me/avatar', uploadAvatar('avatar'), usersController.uploadAvatar);
+router.delete('/me/avatar', usersController.deleteAvatar);
 
 /**
  * @swagger

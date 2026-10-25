@@ -39,3 +39,7 @@ coverage/
 dist/
 build/
 .cache/
+
+# User Uploads
+uploads/*
+!uploads/.gitkeep

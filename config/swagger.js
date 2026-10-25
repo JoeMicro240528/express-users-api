@@ -48,6 +48,7 @@ const swaggerOptions = {
             role: { type: 'string', enum: ['user', 'admin'], example: 'user' },
             isActive: { type: 'boolean', example: true },
             age: { type: 'number', example: 25 },
+            avatar: { type: 'string', nullable: true, example: '/uploads/avatars/avatar-67138f2b1c4e9a0012345678-1729598400000.png' },
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' }
           }

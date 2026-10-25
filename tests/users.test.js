@@ -72,6 +72,63 @@ describe('Users Endpoints Integration Tests', () => {
     });
   });
 
+  describe('Avatar Upload & Management (/users/me/avatar)', () => {
+    // صورة PNG تجريبية مصغرة بحجم بكسل واحد بصيغة Base64
+    const pngBuffer = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+
+    it('يجب أن يرفض رفع الصورة بدون توكن مصادقة (401 Unauthorized)', async () => {
+      const res = await request(app)
+        .patch('/users/me/avatar')
+        .attach('avatar', pngBuffer, 'avatar.png');
+
+      expect(res.status).toBe(401);
+    });
+
+    it('يجب أن يرفض الطلب عند عدم إرفاق أي ملف (400 Bad Request)', async () => {
+      const res = await request(app)
+        .patch('/users/me/avatar')
+        .set('Authorization', `Bearer ${regularToken}`);
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toContain('يرجى اختيار صورة');
+    });
+
+    it('يجب أن يرفض رفع ملفات غير مدعومة كالملفات النصية (400 Bad Request)', async () => {
+      const res = await request(app)
+        .patch('/users/me/avatar')
+        .set('Authorization', `Bearer ${regularToken}`)
+        .attach('avatar', Buffer.from('fake text content'), 'document.txt');
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toContain('نوع الملف غير مدعوم');
+    });
+
+    it('يجب أن يرفع الصورة بنجاح ويحدث مسار avatar للمستخدم (200 OK)', async () => {
+      const res = await request(app)
+        .patch('/users/me/avatar')
+        .set('Authorization', `Bearer ${regularToken}`)
+        .attach('avatar', pngBuffer, 'profile.png');
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.avatar).toBeDefined();
+      expect(res.body.data.avatar).toContain('/uploads/avatars/avatar-');
+    });
+
+    it('يجب أن يحذف الصورة الشخصية ويعيد الحقل إلى null (200 OK)', async () => {
+      const res = await request(app)
+        .delete('/users/me/avatar')
+        .set('Authorization', `Bearer ${regularToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.avatar).toBeNull();
+    });
+  });
+
   describe('GET /users (Pagination, Filtering, Search)', () => {
     it('يجب أن يجلب قائمة المستخدمين مع بيانات الترقيم (200 OK)', async () => {
       const res = await request(app)

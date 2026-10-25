@@ -1,4 +1,5 @@
 import usersService from '../services/users.service.js';
+import AppError from '../utils/AppError.js';
 
 // GET / -> جلب المستخدمين من قاعدة البيانات مع البحث والتصفية والترقيم
 const getAllUsers = async (req, res, next) => {
@@ -76,13 +77,49 @@ const getMe = (req, res) => {
   });
 };
 
+// PATCH /me/avatar -> رفع وتحديث الصورة الشخصية
+const uploadAvatar = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      throw new AppError('يرجى اختيار صورة للرفع في حقل avatar', 400);
+    }
+
+    const updatedUser = await usersService.updateUserAvatar(req.user._id, req.file.filename);
+
+    res.status(200).json({
+      success: true,
+      message: 'تم تحديث الصورة الشخصية بنجاح',
+      data: updatedUser
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// DELETE /me/avatar -> حذف الصورة الشخصية
+const deleteAvatar = async (req, res, next) => {
+  try {
+    const updatedUser = await usersService.deleteUserAvatar(req.user._id);
+
+    res.status(200).json({
+      success: true,
+      message: 'تم حذف الصورة الشخصية بنجاح',
+      data: updatedUser
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   getMe,
   getAllUsers,
   getUserById,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  uploadAvatar,
+  deleteAvatar
 };
 
 export default {
@@ -91,5 +128,7 @@ export default {
   getUserById,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  uploadAvatar,
+  deleteAvatar
 };

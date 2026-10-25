@@ -58,6 +58,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
       min: [0, 'العمر يجب أن يكون رقماً موجباً']
     },
+    avatar: {
+      type: String,
+      default: null
+    },
     refreshToken: {
       type: String,
       select: false // إخفاء الـ refresh token تلقائياً من الاستعلامات
